@@ -18,13 +18,15 @@ int main(int argc, char *argv[]) {
 
 	// dbhdr is a slut that is going to be passed around to all the functions
 	// and updated
+	char *addstring = NULL;
 	struct dbheader_t *dbhdr = NULL;
 	int dbfd = -1;
 	char *filepath = NULL;	
 	bool newFile = false;
 	int c; 
-	
-	while ((c = getopt(argc, argv, "nf:")) != -1)
+	struct employee_t *employees = NULL;
+
+	while ((c = getopt(argc, argv, "nf:a:")) != -1)
 	{
 		switch(c)
 		{
@@ -34,6 +36,9 @@ int main(int argc, char *argv[]) {
 			case 'f':
 				filepath = optarg;
 				break;	
+			case 'a':
+				addstring = optarg;
+				break;
 			case ':':
 				perror("missing option argument\n");
 				return -1;
@@ -85,13 +90,23 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-		
+	if (read_employees(dbfd, dbhdr, &employees) != STATUS_SUCCESS)
+	{
+		printf("Failed to read employees");
+		return 0;
+	}
 
 
-	printf("NewFile: %d\n", newFile);
-	printf("Filepath: %s\n", filepath);
+	if (addstring) 
+	{
+		dbhdr->count++;
+		employees = realloc(employees, dbhdr->count * sizeof(struct employee_t));
 
-	output_file(dbfd, dbhdr);
+		add_employee(dbhdr, employees, addstring); 
+	}
+
+
+	output_file(dbfd, dbhdr, employees);
 
 	return 0;
 
